@@ -26,22 +26,20 @@ int main()
     ao(); msleep(500); set_servo_position(front_claw,2047); //release the material processor
     cmpc(rwheel); while(gmpc(rwheel)>-2375){motor(rwheel,-60); motor(lwheel,0);} //turn right 90, backward //huge adjustment needed here
     while(digital(0)==0||digital(1)==0){mav(rwheel,-1500); mav(lwheel,-1500);} //move backward until straight again
-    ao(); set_servo_position(front_claw,0); msleep(500); //
-    cmpc(lwheel); while(gmpc(lwheel)<2375){mav(lwheel,1500); mav(rwheel,0);}
-    while(analog(0)<2800){mav(rwheel,500);mav(lwheel,500);}
-    while(analog(0)<2800){mav(rwheel,1000); mav(lwheel,1000);}
-    cmpc(rwheel); while(gmpc(rwheel)<2550){mav(rwheel,1000);mav(lwheel,1000);}
-    cmpc(rwheel); while(gmpc(rwheel)<1517){mav(rwheel,1000);mav(lwheel,0);}
+    ao(); set_servo_position(front_claw,0); msleep(500); //close, in order to go up
+    cmpc(lwheel); while(gmpc(lwheel)<2375){mav(lwheel,1500); mav(rwheel,0);} //turn 90 deg
+    while(analog(0)<2800){mav(rwheel,1000); mav(lwheel,1000);} //forward until black line
+    cmpc(rwheel); while(gmpc(rwheel)<2550){mav(rwheel,1000);mav(lwheel,1000);} // forward specific distance
+    cmpc(rwheel); while(gmpc(rwheel)<1517){mav(rwheel,1000);mav(lwheel,0);} // turn specific distance
     cmpc(rwheel); while(gmpc(rwheel)<500){mav(rwheel,1500); mav(lwheel,1500);}
-	int timer = 0;
+	int timer = 0; //line following to go up the bridge
 	while(timer<15000){
 		if(analog(0)<2900){motor(rwheel,75); motor(lwheel,25);msleep(100);}
 		else{motor(lwheel,75); motor(rwheel,25);msleep(100);}
 	timer+=100;
     }
-    cmpc(rwheel); while(gmpc(rwheel)<2375){mav(rwheel,1500); mav(lwheel,0);}
-    cmpc(rwheel); while(gmpc(rwheel)<4000){mav(rwheel,1000); mav(lwheel,1000);}
-
-//arm action
+    cmpc(rwheel); while(gmpc(rwheel)<2375){mav(rwheel,1500); mav(lwheel,0);} // turn left
+    cmpc(rwheel); while(gmpc(rwheel)<4000){mav(rwheel,1000); mav(lwheel,1000);} // forward a specific distance
+//arm action over here
 return 0;
 }
