@@ -1,0 +1,95 @@
+#include <kipr/botball.h>
+int rwheel = 1; int lwheel = 2; int tophat = 0; int rangefinder = 1; int front_claw=2; int main_arm=1; int main_claw=3; 
+int claw_open=720; int claw_grasp=1650; int arm_down=1130; int true = 1; int false = 0; int inch_to_ticks = 220;
+//functions
+
+void turn_left(); //given requested degrees and a boolean whether the chosen speed is positive or not, it turns, stationary, using the right wheel (left wheel's speed is 0).   
+void turn_right(); //see turn_left() except its direction is now right.
+void precise_straight(); //clears gmpcs of both wheels. given requested distance in inches (and speed in ticks/s) it moves, and when it exceeds requested distance, it adjusts.
+void move_one_inch(); //an altered version of precise_straight() that always moves one inch, to center itself on the black line. only args: boolean.
+int main(){
+  enable_servos(); set_servo_position(main_arm,2047); set_servo_position(main_claw,2047); set_servo_position(front_claw, 0);
+    //wait_for_light(5); //fix this
+    cmpc(rwheel); cmpc(lwheel);
+    while(analog(tophat)<2800){
+      mav(rwheel,1000); mav(lwheel,1000);
+    }
+    mav(rwheel,1000); mav(lwheel,1000); msleep(1200);
+    
+    turn_left(97,true);
+    
+   cmpc(rwheel); cmpc(lwheel);
+   
+    //non experimental straight line algorithm
+    
+    while(analog(tophat)<2800){mav(rwheel,1500);mav(lwheel,1500);} ao(); msleep(100);
+    set_servo_position(front_claw,2047);
+    precise_straight(6,1150,true);
+    ao(); msleep(200);
+    
+   set_servo_position(front_claw,2047); set_servo_position(main_arm,1988);
+  	turn_left(92,true);
+    while(analog(rangefinder)<2500){mav(rwheel,300); mav(lwheel,300);} //adjust
+    mav(rwheel,500); mav(lwheel,500); msleep(1000);   set_servo_position(front_claw,0); ao(); msleep(500);
+    disable_servos();
+    
+    while(analog(0)<2800){mav(rwheel,-1500); mav(lwheel,-1500);}
+    while(gmpc(rwheel)>-979){mav(rwheel,-1000);mav(lwheel,-1000);} while(gmpc(rwheel)<-979){mav(rwheel,250);mav(lwheel,250);}
+    turn_left(100, true);
+    precise_straight(28,1500,true);
+    turn_left(100,true);
+    set_servo_position(front_claw,2047);
+    mav(rwheel,500); mav(lwheel,500); msleep(2000);
+   
+     
+    
+    return 0;
+}
+
+
+void turn_left(int degrees,int positive_boolean){
+	//90 degrees is to 2375 as x degrees is to y ticks. 2375/90 (26.38888) * x degrees = y ticks.
+	int ticks = 26.3888 * degrees;
+	cmpc(rwheel);
+	if(positive_boolean==1){
+		while(gmpc(rwheel)<ticks){mav(rwheel,1500);mav(lwheel,0);}  //turns
+		//while(gmpc(rwheel)>ticks){mav(rwheel,-250); mav(lwheel,0);} //adjustment
+	}
+	else if(positive_boolean==0){	
+		while(gmpc(rwheel)>(ticks*-1)){mav(rwheel,-1500);mav(lwheel,0);}  //turns
+		//while(gmpc(rwheel)<(ticks*-1)){mav(rwheel,250); mav(lwheel,0);} //adjustment
+	}
+}
+
+void turn_right(int degrees, int positive_boolean){
+	//90 degrees is to 2375 as x degrees is to y ticks. 2375/90 (26.38888) * x degrees = y ticks.
+	int ticks = 26.3888 * degrees;
+	cmpc(lwheel); 	
+	if(positive_boolean==1){
+		while(gmpc(lwheel)<ticks){mav(lwheel,1187.5);mav(rwheel,0);}  //turns
+		//ao(); msleep(100); while(gmpc(lwheel)>ticks){mav(lwheel,-500); mav(lwheel,0);} //adjustment
+	}
+	else if(positive_boolean==0){
+		while(gmpc(lwheel)>(ticks*-1)){mav(lwheel,-1187.5);mav(rwheel,0);}  //turns
+		//ao(); msleep(100); while(gmpc(lwheel)<(ticks*-1)){mav(lwheel,500); mav(lwheel,0);} //adjustment
+	}
+}
+
+void precise_straight(int inches, int speed, int positive_boolean){
+	//1100 ticks is to (approx) 5 inches as x ticks is to y inches. We get 220 * y inches = x ticks
+	int ticks = 220 * inches;
+	cmpc(rwheel); cmpc(lwheel); 
+	if(positive_boolean==1){
+		while(gmpc(rwheel)<ticks&&gmpc(lwheel)<ticks){mav(rwheel,speed); mav(lwheel,speed);}
+		ao(); msleep(100); while(gmpc(rwheel)>ticks&&gmpc(lwheel)>ticks){mav(rwheel,-500);mav(lwheel,-500);}
+	}
+	else if(positive_boolean==0){
+		while(gmpc(rwheel)>(ticks*-1)&&gmpc(lwheel)>(ticks*-1)){mav(rwheel,speed); mav(lwheel,speed);}
+		ao(); msleep(100); while(gmpc(rwheel)<(ticks*-1)&&gmpc(lwheel)<(ticks*-1)){mav(rwheel,500);mav(lwheel,500);}
+	}
+}
+
+void move_one_inch(int boolean){
+	precise_straight(1,750,boolean);
+}
+
